@@ -3,60 +3,23 @@ using AtomPluginsModels;
 
 namespace AtomPluginsWebApp.Services
 {
-    public class MonitoringService
+    public class MonitoringService(ApplicationDbContext db)
     {
-        private readonly ApplicationContext _db;
+        private readonly ApplicationDbContext _db = db;
 
-        public MonitoringService(ApplicationContext db)
+        public async Task<bool> CreatePluginMonitoringAsync(PluginMonitoringForCreationDTO dto)
         {
-            _db = db;
-        }
-
-        public async Task<bool> WriteAsync(AtomPluginMonitoringDTO atomPluginMonitoringDTO)
-        {
-            if (atomPluginMonitoringDTO == null)
+            if (dto == null)
             {
                 return false;
             }
 
-            var atomPluginMonitoring = atomPluginMonitoringDTO.FromDTO();
+            var pluginMonitoring = dto.ToPluginMonitoring();
 
-            _db.Monitoring.Add(atomPluginMonitoring);
-            await _db.SaveChangesAsync();
-            return true;
-        }
+            _db.Monitoring.Add(pluginMonitoring);
 
-        public async Task<bool> WriteAsync(AtomPluginSpeedMonitoringDTO atomPluginSpeedMonitoringDTO)
-        {
-            if (atomPluginSpeedMonitoringDTO == null)
-            {
-                return false;
-            }
-
-            var atomPluginSpeedMonitoring = atomPluginSpeedMonitoringDTO.FromDTO();
-
-            _db.SpeedMonitoring.Add(atomPluginSpeedMonitoring);
-            await _db.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> WriteAsync(AtomSyncMonitoringDTO atomSyncMonitoringDTO)
-        {
-            if (atomSyncMonitoringDTO == null)
-            {
-                return false;
-            }
-
-            var atomSyncMonitoring = atomSyncMonitoringDTO.FromDTO();
-
-            _db.SyncMonitoring.Add(atomSyncMonitoring);
-            await _db.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<IEnumerable<AtomPluginMonitoringDTO>> GetAllMonitoringAsync()
-        {
-            return await Task.Run(() => _db.Monitoring.Select(x => x.ToDTO()));
+            var result = await _db.SaveChangesAsync();
+            return result == 1;
         }
     }
 }
